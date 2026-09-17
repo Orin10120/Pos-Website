@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'xendit' => [
+        'secret_key' => env('XENDIT_SECRET_KEY'),
+        'is_production' => env('XENDIT_IS_PRODUCTION', false),
+    ],
+
 ];
