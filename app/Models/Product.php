@@ -2,39 +2,37 @@
 
 namespace App\Models;
 
-use Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Product extends Model
 {
     protected $fillable = ['user_id', 'store_id', 'image', 'barcode', 'name', 'category_id', 'unit_id', 'selling_price', 'purchase_price'];
 
-    /**
-     * Relasi ke model Category.
-     * Satu produk hanya memiliki satu kategori.
-     */
-    public function category() {
+    public function category()
+    {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Relasi ke model StockTotal.
-     * Satu produk hanya memiliki satu total stok.
-     */
-
-    public function stockTotal() {
+    public function stockTotal()
+    {
         return $this->hasOne(StockTotal::class);
     }
 
+    public function stockProducts()
+    {
+        return $this->hasMany(StockProduct::class);
+    }
 
-    /**
-     * Aksesors untuk mendapatkan URL gambar produk.
-     */
-    protected static function image(): Attribute
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+
+    protected function image(): Attribute
     {
         return Attribute::make(
             get: fn($image) => url('/storage/products/' . $image),
         );
-
     }
 }

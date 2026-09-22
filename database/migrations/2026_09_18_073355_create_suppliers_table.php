@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('phone')->unique();
             $table->string('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('province_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('city_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('province_id')->constrained('provinces')->cascadeOnDelete();
+            $table->foreignId('city_id')->constrained('cities')->cascadeOnDelete();
             $table->foreignId('store_id')->nullable()->constrained('stores')->onDelete('set null');
             $table->timestamps();
         });

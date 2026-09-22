@@ -29,6 +29,11 @@ class Transaction extends Model
         return $this->hasMany(TransactionDetail::class);
     }
 
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+
     /**
      * Event boot untuk logika tambahan saat model di-create.
      */
