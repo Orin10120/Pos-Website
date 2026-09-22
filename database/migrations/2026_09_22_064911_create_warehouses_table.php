@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stock_opnames', function (Blueprint $table) {
+        Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('store_id')->nullable();
-            $table->date('opname_date');
-            $table->string('status')->default('pending');
+            $table->string('name');
+            $table->string('address');
+            $table->foreignId('province_id')->constrained('provinces')->onDelete('cascade');
+            $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
             $table->timestamps();
-
-            $table->foreign('store_id')->references('id')->on('stores')->onDelete('cascade');
-
         });
     }
 
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stock_opnames');
+        Schema::dropIfExists('warehouses');
     }
 };

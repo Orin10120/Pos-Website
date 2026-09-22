@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class Transaction extends Model
 {
-    protected $guarded = [];
+    protected $fillable = ['customer_id', 'user_id', 'store_id', 'invoice', 'total_amount', 'cash', 'change', 'discount', 'payment_method', 'payment_link_url', 'transaction_date', 'status'];
 
     /**
      * Relasi dengan model Customer.

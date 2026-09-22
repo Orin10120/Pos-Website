@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockOpname extends Model
 {
-    protected $guarded = [];
+    protected $fillable = ['store_id', 'opname_date', 'status'];
 
     /**
      * Relasi ke model StockOpnameDetail.

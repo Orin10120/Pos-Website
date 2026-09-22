@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('province_id')->constrained()->cascadeOnDelete();
             $table->foreignId('city_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('store_id')->nullable()->constrained('stores')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockProduct extends Model
 {
-    protected $guarded = [];
+   protected $fillable = ['product_id', 'supplier_id', 'store_id', 'warehouse_id', 'user_id', 'purchase_order_id', 'stock_quantity', 'received_at'];
 
     /**
      * Relasi ke model Product.
