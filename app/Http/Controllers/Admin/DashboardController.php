@@ -33,7 +33,7 @@ class DashboardController extends Controller
             ->when(!$isAdmin && $storeId, function ($query) use ($storeId) {
                 $query->where('store_id', $storeId);
             })
-            ->sum('total_amount');
+            ->sum(DB::raw('CAST(total_amount AS NUMERIC)'));
 
         $totalTransactions = Transaction::query()
             ->when(!$isAdmin && $storeId, function ($query) use ($storeId) {
@@ -67,7 +67,7 @@ class DashboardController extends Controller
             })
             ->select(
                 DB::raw('DATE(transaction_date) as date'),
-                DB::raw('SUM(total_amount) as total')
+                DB::raw('SUM(CAST(total_amount AS NUMERIC)) as total')
             )
             ->groupBy('date')
             ->orderBy('date')

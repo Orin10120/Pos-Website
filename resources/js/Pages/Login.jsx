@@ -186,7 +186,7 @@ export default function Login() {
     return (
         <>
             <Head>
-                <title>Login - EasyPOS</title>
+                <title>Login - AlphaPOS</title>
             </Head>
             <section className="p-0 min-vh-100 d-flex align-items-center bg-light">
                 <div className="container-fluid p-0">

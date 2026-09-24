@@ -74,7 +74,7 @@ export default function Dashboard() {
     return (
         <>
             <Head>
-                <title>Dashboard - EasyPOS</title>
+                <title>Dashboard - AlphaPOS</title>
             </Head>
 
             <AdminLayout>
