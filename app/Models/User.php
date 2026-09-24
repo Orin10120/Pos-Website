@@ -67,4 +67,11 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Store::class);
     }
+
+    public function getPermissionArray()
+    {
+        return $this->getAllPermissions()->mapWithKeys(function ($permission) {
+            return [$permission->name => true];
+        })->toArray();
+    }
 }

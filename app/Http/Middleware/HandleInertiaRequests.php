@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\Store;
+
 
 class HandleInertiaRequests extends Middleware
 {
@@ -35,9 +37,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
-            //
-        ];
+        return array_merge(parent::share($request), [
+            'auth' => [
+                'user' => $request->user() ?: null,
+                'permissions' => $request->user() ? $request->user()->getPermissionArray() : []
+            ],
+
+            'currentStore' => function () use ($request) {
+                if ($request->user() && $request->user()->store_id) {
+                    return Store::find($request->user()->store_id);
+                }
+                return null;
+            },
+        ]);
     }
 }
