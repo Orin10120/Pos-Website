@@ -6,7 +6,8 @@ const Sidebar = () => {
     const { currentStore } = usePage().props
 
     const permissions = {
-           roles: hasAnyPermission(["roles.index"]),
+        roles: hasAnyPermission(["roles.index"]),
+        users: hasAnyPermission(["users.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
@@ -55,6 +56,14 @@ const Sidebar = () => {
                                     href="/admin/roles"
                                     icon="bi-shield-lock"
                                     label="Roles"
+                                />
+                            )}
+
+                            {permissions.roles && (
+                                <NavItem
+                                    href="/admin/users"
+                                    icon="bi-person"
+                                    label="Users"
                                 />
                             )}
 
