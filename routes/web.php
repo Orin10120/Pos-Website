@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\CustomerController;
 
 
 Route::get('/', function () {
@@ -49,4 +50,16 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
+
+    $resources = [
+        'customers' => [
+        'controller' => CustomerController::class,
+        'permissions' => 'customers.index|customers.create|customers.edit|customers.delete'
+        ],
+    ];
+
+    foreach ($resources as $name => $resource) {
+        Route::resource($name, $resource['controller'])
+            ->middleware("permission:{$resource['permissions']}");
+    }
 });

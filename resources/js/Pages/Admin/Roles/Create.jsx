@@ -50,7 +50,7 @@ export default function RoleCreate() {
     return (
         <>
             <Head>
-                <title>Create Roles - EasyPOS</title>
+                <title>Create Roles - AlphaPOS</title>
             </Head>
             <AdminLayout>
                 <div className="row g-4 mt-4">
