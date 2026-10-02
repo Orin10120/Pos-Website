@@ -245,7 +245,7 @@ export default function CustomerIndex() {
                                                             </Link>
                                                         )}
                                                         {hasAnyPermission(["customers.delete"]) && (
-                                                            <div className="d-flex justify-content-center align-items-center gap-2">
+                                                        <div className="d-flex justify-content-center align-items-center gap-2">
                                                             <button
                                                                 onClick={() => handleDelete(customer.id)}
                                                                 className="btn btn-primary btn-light text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1 border-0 shadow-sm"

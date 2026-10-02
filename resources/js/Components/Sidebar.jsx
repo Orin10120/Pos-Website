@@ -9,11 +9,12 @@ const Sidebar = () => {
         roles: hasAnyPermission(["roles.index"]),
         users: hasAnyPermission(["users.index"]),
         customers: hasAnyPermission(["customers.index"]),
+        warehouses: hasAnyPermission(["warehouses.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
     const hasUserManagement = permissions.roles || permissions.users
-    const hasDataManagement = permissions.customers
+    const hasDataManagement = permissions.customers || permissions.warehouses
 
     return (
         <aside
@@ -84,6 +85,14 @@ const Sidebar = () => {
                                         icon="bi-people"
                                         label="Customers"
                                   />
+                            )}
+
+                            {permissions.warehouses && (
+                              <NavItem
+                                 href="/admin/warehouses"
+                                       icon="bi-building"
+                                       label="Warehouses/Gudang"
+                                />
                             )}
 
                         </>

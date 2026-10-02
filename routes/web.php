@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\WarehouseController;
 
 
 Route::get('/', function () {
@@ -62,4 +63,17 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
         Route::resource($name, $resource['controller'])
             ->middleware("permission:{$resource['permissions']}");
     }
+
+    Route::resource('warehouses', WarehouseController::class)->only(['index'])
+    ->middleware('permission:stores.index');
+
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
+        Route::post('warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
+        Route::get('warehouses/{warehouse}/edit', [WarehouseController::class, 'edit'])->name('warehouses.edit');
+        Route::put('warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('warehouses.update');
+        Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('warehouses.destroy');
+    });
+
+    Route::get('/get-cities/{provinceId}', [WarehouseController::class, 'getCitiesByProvince'])->name('get-cities');
 });
