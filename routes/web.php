@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\Admin\StoreController;
 
 
 Route::get('/', function () {
@@ -50,6 +51,17 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
         Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    Route::resource('stores', StoreController::class)->only(['index'])
+    ->middleware('permission:stores.index');
+
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
+        Route::post('stores', [StoreController::class, 'store'])->name('stores.store');
+        Route::get('stores/{store}/edit', [StoreController::class, 'edit'])->name('stores.edit');
+        Route::put('stores/{store}', [StoreController::class, 'update'])->name('stores.update');
+        Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
     });
 
     $resources = [
