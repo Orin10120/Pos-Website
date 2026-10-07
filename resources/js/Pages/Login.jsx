@@ -1,186 +1,82 @@
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import { Head, router, useForm } from "@inertiajs/react"
-import Webcam from "react-webcam"
-import axios from "axios"
 import Swal from "sweetalert2"
+import { isPasskeySupported, loginWithPasskey } from "../utils/passkeys"
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false)
-    const [isModelLoaded, setIsModelLoaded] = useState(false)
     const [loginMethod, setLoginMethod] = useState("password")
-    const [previewImage, setPreviewImage] = useState(null)
-    const [faceDescriptor, setFaceDescriptor] = useState(null)
-
-    const webcamRef = useRef(null)
+    const isFaceSupported = isPasskeySupported()
 
     const { data, setData, errors, reset } = useForm({
         email: "",
         password: "",
-        face_image: null,
-        face_descriptor: null,
     })
 
-    // 1. Load Model face-api dari window.faceapi
-    useEffect(() => {
-        const loadModels = async () => {
-            try {
-                // Tunggu sampai window.faceapi tersedia
-                if (typeof window !== "undefined" && window.faceapi) {
-                    const MODEL_URL = "/models"
-                    await Promise.all([
-                        window.faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                        window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                        window.faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                    ])
-                    setIsModelLoaded(true)
-                }
-            } catch (error) {
-                console.error("Failed to load face-api models:", error)
-            }
-        }
 
-        loadModels()
-    }, [])
-
-    // 2. Capture & Deteksi Wajah
-    const handleCapture = async () => {
-        if (!isModelLoaded || !window.faceapi) {
-            Swal.fire("Sabar", "Model Face API sedang dimuat...", "warning")
-            return
-        }
-
-        if (!webcamRef.current) return
-
-        const imageSrc = webcamRef.current.getScreenshot()
-        if (!imageSrc) return
-
-        const img = new Image()
-        img.src = imageSrc
-        await img.decode()
-
-        const detection = await window.faceapi
-            .detectSingleFace(img)
-            .withFaceLandmarks()
-            .withFaceDescriptor()
-
-        if (!detection) {
+    // Login dengan Face ID (WebAuthn / Passkey)
+    const faceLoginHandler = async () => {
+        setIsLoading(true)
+        try {
+            const redirect = await loginWithPasskey()
+            Swal.fire({
+                icon: "success",
+                title: "Login Successful",
+                text: "Face ID verified!",
+                showConfirmButton: false,
+                timer: 1500,
+            })
+            window.location.href = redirect || "/admin/dashboard"
+        } catch (error) {
             Swal.fire({
                 icon: "error",
-                title: "Wajah Tidak Terdeteksi",
-                text: "Pastikan wajah Anda terlihat jelas pada kamera.",
+                title: "Login Failed",
+                text: error.message || "Face ID verification failed.",
+                confirmButtonColor: "#d33",
             })
+            setIsLoading(false)
+        }
+    }
+
+    // Handler Submit Login
+    const loginHandler = (e) => {
+        e.preventDefault()
+
+        if (loginMethod === "face") {
+            faceLoginHandler()
             return
         }
 
-        const descriptorArray = Array.from(detection.descriptor)
-        setFaceDescriptor(descriptorArray)
-
-        const res = await fetch(imageSrc)
-        const blob = await res.blob()
-        const file = new File([blob], "face-image.jpg", { type: "image/jpeg" })
-
-        setData((prevData) => ({
-            ...prevData,
-            face_image: file,
-            face_descriptor: descriptorArray,
-        }))
-
-        setPreviewImage(imageSrc)
-
-        Swal.fire({
-            icon: "success",
-            title: "Wajah Terdeteksi!",
-            text: "Wajah berhasil ditangkap dan diproses.",
-            timer: 1200,
-            showConfirmButton: false,
-        })
-    }
-
-    // 3. Handler Submit Login
-    const loginHandler = (e) => {
-        e.preventDefault()
         setIsLoading(true)
-
-        if (loginMethod === "password") {
-            router.post(
-                "/login",
-                {
-                    email: data.email,
-                    password: data.password,
+        router.post(
+            "/login",
+            {
+                email: data.email,
+                password: data.password,
+            },
+            {
+                onStart: () => setIsLoading(true),
+                onSuccess: () => {
+                    reset("password")
+                    Swal.fire({
+                        icon: "success",
+                        title: "Login Successful",
+                        text: "Welcome back!",
+                        showConfirmButton: false,
+                        timer: 1500,
+                    })
                 },
-                {
-                    onStart: () => setIsLoading(true),
-                    onSuccess: () => {
-                        reset("password")
-                        Swal.fire({
-                            icon: "success",
-                            title: "Login Successful",
-                            text: "Welcome back!",
-                            showConfirmButton: false,
-                            timer: 1500,
-                        })
-                    },
-                    onError: (errors) => {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Login Failed",
-                            text: errors.email || errors.password || "Invalid email or password",
-                            confirmButtonColor: "#d33",
-                        })
-                    },
-                    onFinish: () => setIsLoading(false),
-                }
-            )
-        } else {
-            if (!data.face_image && !data.face_descriptor) {
-                setIsLoading(false)
-                Swal.fire({
-                    icon: "warning",
-                    title: "Wajah Belum Ditangkap",
-                    text: "Silakan ambil foto wajah terlebih dahulu.",
-                })
-                return
-            }
-
-            const url = "/api/login-with-face"
-            const formData = new FormData()
-            formData.append("email", data.email)
-            if (data.face_image) formData.append("face_image", data.face_image)
-            if (data.face_descriptor) {
-                formData.append("face_descriptor", JSON.stringify(data.face_descriptor))
-            }
-
-            axios
-                .post(url, formData, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                })
-                .then((response) => {
-                    if (response.data.redirect) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Login Successful",
-                            text: "Face recognized!",
-                            showConfirmButton: false,
-                            timer: 1500,
-                        })
-                        window.location.href = response.data.redirect
-                    }
-                })
-                .catch((error) => {
-                    const errorMessage =
-                        error.response?.data?.message || "Face recognition failed."
+                onError: (errors) => {
                     Swal.fire({
                         icon: "error",
                         title: "Login Failed",
-                        text: errorMessage,
+                        text: errors.email || errors.password || "Invalid email or password",
                         confirmButtonColor: "#d33",
-                        footer: "Make sure your face is clearly visible in the image.",
                     })
-                })
-                .finally(() => {
-                    setIsLoading(false)
-                })
-        }
+                },
+                onFinish: () => setIsLoading(false),
+            }
+        )
     }
 
     return (
@@ -247,101 +143,74 @@ export default function Login() {
                                 {loginMethod === "face" && (
                                     <div className="alert alert-info mb-4">
                                         <small>
-                                            <strong>Note:</strong> To use Face Login, please add a new user first in the <strong>Users</strong> menu.
+                                            <strong>Note:</strong> Face ID harus didaftarkan lebih dulu oleh admin di menu <strong>Users</strong>. Wajah diverifikasi langsung oleh perangkat Anda dan tidak dikirim ke server.
                                         </small>
                                     </div>
                                 )}
 
                                 <form onSubmit={loginHandler} autoComplete="off">
-                                    {/* Email */}
-                                    <div className="form-floating mb-3">
-                                        <input
-                                            type="email"
-                                            className={`form-control ${
-                                                errors.email ? "is-invalid" : ""
-                                            }`}
-                                            id="loginEmail"
-                                            placeholder="E-mail *"
-                                            value={data.email}
-                                            onChange={(e) => setData("email", e.target.value)}
-                                            disabled={isLoading}
-                                            autoComplete="off"
-                                        />
-                                        <label htmlFor="loginEmail">
-                                            Email address <span className="text-danger">*</span>
-                                        </label>
-                                        {errors.email && (
-                                            <div className="invalid-feedback d-block">
-                                                {errors.email}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Password / Face Capture */}
                                     {loginMethod === "password" ? (
-                                        <div className="form-floating mb-4">
-                                            <input
-                                                type="password"
-                                                className={`form-control ${
-                                                    errors.password ? "is-invalid" : ""
-                                                }`}
-                                                id="loginPassword"
-                                                placeholder="Password *"
-                                                value={data.password}
-                                                onChange={(e) => setData("password", e.target.value)}
-                                                disabled={isLoading}
-                                                autoComplete="new-password"
-                                            />
-                                            <label htmlFor="loginPassword">
-                                                Password <span className="text-danger">*</span>
-                                            </label>
-                                            {errors.password && (
-                                                <div className="invalid-feedback d-block">
-                                                    {errors.password}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="mb-4">
-                                            <label className="form-label d-flex justify-content-between align-items-center mb-2">
-                                                <span className="fw-medium">
-                                                    Face Capture <span className="text-danger">*</span>
-                                                </span>
-                                                {!isModelLoaded && (
-                                                    <span className="badge bg-warning text-dark">
-                                                        Loading Models...
-                                                    </span>
-                                                )}
-                                            </label>
-                                            <div className="ratio ratio-4x3 mb-2 rounded overflow-hidden border bg-dark">
-                                                <Webcam
-                                                    ref={webcamRef}
-                                                    screenshotFormat="image/jpeg"
-                                                    className="w-100 h-100 object-fit-cover"
+                                        <>
+                                            {/* Email */}
+                                            <div className="form-floating mb-3">
+                                                <input
+                                                    type="email"
+                                                    className={`form-control ${
+                                                        errors.email ? "is-invalid" : ""
+                                                    }`}
+                                                    id="loginEmail"
+                                                    placeholder="E-mail *"
+                                                    value={data.email}
+                                                    onChange={(e) => setData("email", e.target.value)}
+                                                    disabled={isLoading}
+                                                    autoComplete="off"
                                                 />
+                                                <label htmlFor="loginEmail">
+                                                    Email address <span className="text-danger">*</span>
+                                                </label>
+                                                {errors.email && (
+                                                    <div className="invalid-feedback d-block">
+                                                        {errors.email}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-info mb-3 w-100 text-white"
-                                                onClick={handleCapture}
-                                                disabled={isLoading || !isModelLoaded}
-                                            >
-                                                {isModelLoaded ? "Capture & Process Face" : "Loading Face API..."}
-                                            </button>
-                                            {previewImage && (
-                                                <div className="text-center">
-                                                    <img
-                                                        src={previewImage}
-                                                        alt="Preview"
-                                                        className="img-thumbnail"
-                                                        style={{ maxHeight: "150px" }}
-                                                    />
+
+                                            {/* Password */}
+                                            <div className="form-floating mb-4">
+                                                <input
+                                                    type="password"
+                                                    className={`form-control ${
+                                                        errors.password ? "is-invalid" : ""
+                                                    }`}
+                                                    id="loginPassword"
+                                                    placeholder="Password *"
+                                                    value={data.password}
+                                                    onChange={(e) => setData("password", e.target.value)}
+                                                    disabled={isLoading}
+                                                    autoComplete="new-password"
+                                                />
+                                                <label htmlFor="loginPassword">
+                                                    Password <span className="text-danger">*</span>
+                                                </label>
+                                                {errors.password && (
+                                                    <div className="invalid-feedback d-block">
+                                                        {errors.password}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-center mb-4 py-3">
+                                            <i className="bi bi-person-bounding-box display-1 text-primary"></i>
+                                            <p className="text-muted mt-2 mb-0">
+                                                Klik tombol di bawah, lalu verifikasi wajah Anda (Face ID / Windows Hello / sidik jari, atau lewat HP dengan scan QR).
+                                            </p>
+                                            {!isFaceSupported && (
+                                                <div className="alert alert-warning mt-3 mb-0 text-start">
+                                                    <small>
+                                                        Browser ini tidak mendukung WebAuthn. Gunakan HTTPS atau localhost.
+                                                    </small>
                                                 </div>
-                                            )}
-                                            {errors.face_image && (
-                                                <small className="text-danger d-block mt-2">
-                                                    {errors.face_image}
-                                                </small>
                                             )}
                                         </div>
                                     )}
@@ -349,7 +218,7 @@ export default function Login() {
                                     <button
                                         className="btn btn-primary w-100 btn-lg fs-6 fw-semibold"
                                         type="submit"
-                                        disabled={isLoading || (loginMethod === "face" && !isModelLoaded)}
+                                        disabled={isLoading || (loginMethod === "face" && !isFaceSupported)}
                                     >
                                         {isLoading ? (
                                             <div
@@ -358,6 +227,8 @@ export default function Login() {
                                             >
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
+                                        ) : loginMethod === "face" ? (
+                                            "Login dengan Face ID"
                                         ) : (
                                             "Login"
                                         )}

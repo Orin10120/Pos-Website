@@ -10,12 +10,13 @@ const Sidebar = () => {
         users: hasAnyPermission(["users.index"]),
         customers: hasAnyPermission(["customers.index"]),
         warehouses: hasAnyPermission(["warehouses.index"]),
-        stores: hasAnyPermission(["stores.index"])
+        stores: hasAnyPermission(["stores.index"]),
+        suppliers: hasAnyPermission(["suppliers.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
     const hasUserManagement = permissions.roles || permissions.users
-    const hasDataManagement = permissions.customers || permissions.warehouses || permissions.stores
+    const hasDataManagement = permissions.customers || permissions.warehouses || permissions.stores || permissions.suppliers
 
     return (
         <aside
@@ -101,6 +102,14 @@ const Sidebar = () => {
                                  href="/admin/stores"
                                        icon="bi-shop"
                                        label="Stores"
+                                />
+                            )}
+
+                            {permissions.suppliers && (
+                                <NavItem
+                                    href="/admin/suppliers"
+                                    icon="bi-truck"
+                                    label="Suppliers"
                                 />
                             )}
 

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
@@ -26,8 +27,14 @@ class UserRequest extends FormRequest
 
         $rules = [
             'name'  => 'required',
-            'email' => 'required|email|unique:users,email,' . $userId,
-            'face_image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'email' => [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            Rule::unique('users', 'email')->ignore($userId),
+            ],
+            'enroll_face'  => 'nullable|boolean',
             'warehouse_id' => 'nullable|exists:warehouses,id',
             'store_id'     => 'required|exists:stores,id',
         ];

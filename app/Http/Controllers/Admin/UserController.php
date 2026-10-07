@@ -66,21 +66,19 @@ class UserController extends Controller
     {
         try {
             $data = $request->validated();
-
-            // Face embeddings/descriptor sudah dikirim dari Client (React + Face API)
-            // berupa Array Float32 / JSON String
-            if ($request->has('face_embeddings') && !empty($request->face_embeddings)) {
-                $data['face_embeddings'] = is_array($request->face_embeddings)
-                    ? json_encode($request->face_embeddings)
-                    : $request->face_embeddings;
-            } else {
-                $data['face_embeddings'] = null;
-            }
+            unset($data['enroll_face']);
 
             $data['password'] = bcrypt($data['password']);
 
             $user = User::create($data);
             $user->assignRole($request->roles);
+
+            // Face ID (passkey) harus didaftarkan lewat perangkat yang sedang dipakai,
+            // jadi arahkan admin ke halaman edit user untuk melakukan pendaftaran.
+            if ($request->boolean('enroll_face')) {
+                return redirect()->route('admin.users.edit', ['user' => $user, 'enroll' => 1])
+                    ->with('success', 'User created successfully');
+            }
 
             return redirect()->route('admin.users.index')
                 ->with('success', 'User created successfully');
@@ -99,7 +97,11 @@ class UserController extends Controller
         return inertia('Admin/Users/Edit', [
             'user' => $user,
             'roles' => $roles,
-            'stores' => $stores
+            'stores' => $stores,
+            'passkeys' => $user->passkeys()->latest()->get()
+                ->map(fn ($passkey) => UserPasskeyController::present($passkey))
+                ->values(),
+            'enroll' => request()->boolean('enroll'),
         ]);
     }
 
@@ -113,12 +115,7 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        // Update face embeddings jika ada pembaruan dari frontend
-        if ($request->has('face_embeddings') && !empty($request->face_embeddings)) {
-            $data['face_embeddings'] = is_array($request->face_embeddings)
-                ? json_encode($request->face_embeddings)
-                : $request->face_embeddings;
-        }
+        unset($data['enroll_face']);
 
         $user->update($data);
         $user->syncRoles($request->roles);

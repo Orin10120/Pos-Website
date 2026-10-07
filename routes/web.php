@@ -6,9 +6,11 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserPasskeyController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\StoreController;
+use App\Http\Controllers\Admin\SupplierController;
 
 
 Route::get('/', function () {
@@ -51,6 +53,11 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
         Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        // Face ID / Passkey milik user (didaftarkan oleh admin)
+        Route::get('users/{user}/passkeys/options', [UserPasskeyController::class, 'options'])->name('users.passkeys.options');
+        Route::post('users/{user}/passkeys', [UserPasskeyController::class, 'store'])->name('users.passkeys.store');
+        Route::delete('users/{user}/passkeys/{passkey}', [UserPasskeyController::class, 'destroy'])->name('users.passkeys.destroy');
     });
 
     Route::resource('stores', StoreController::class)->only(['index'])
@@ -66,8 +73,12 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
 
     $resources = [
         'customers' => [
-        'controller' => CustomerController::class,
-        'permissions' => 'customers.index|customers.create|customers.edit|customers.delete'
+            'controller' => CustomerController::class,
+            'permissions' => 'customers.index|customers.create|customers.edit|customers.delete'
+        ],
+        'suppliers' => [
+            'controller' => SupplierController::class,
+            'permissions' => 'suppliers.index|suppliers.create|suppliers.edit|suppliers.delete'
         ],
     ];
 

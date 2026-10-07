@@ -40,7 +40,7 @@ const NavbarBackend = () => {
                             <li className="nav-item ms-2 ms-md-3 dropdown">
                                 {/* Dropdown Toggle */}
                                 <a
-                                    className="nav-link dropdown-toggle d-flex align-items-center"
+                                    className="nav-link d-flex align-items-center"
                                     href="#"
                                     id="profileDropdown"
                                     role="button"

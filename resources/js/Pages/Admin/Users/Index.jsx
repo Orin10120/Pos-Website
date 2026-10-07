@@ -175,7 +175,7 @@ export default function UserIndex() {
                                                                 <span className="fw-medium">Edit</span>
                                                             </Link>
                                                             <button
-                                                                onClick={() => handleDelete(role.id)}
+                                                                onClick={() => handleDelete(user.id)}
                                                                 className="btn btn-primary btn-light text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1 border-0 shadow-sm"
                                                                 title="Delete Role"
                                                             >

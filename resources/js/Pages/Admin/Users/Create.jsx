@@ -1,15 +1,9 @@
-import { useState, useRef } from "react"
 import { usePage, useForm, Head, Link } from "@inertiajs/react"
 import Swal from "sweetalert2"
 import AdminLayout from "../../../Layouts/AdminLayout"
-import Webcam from "react-webcam"
 
 export default function UserCreate() {
     const { roles, stores } = usePage().props
-
-    const webcamRef = useRef(null)
-    const [useCamera, setUseCamera] = useState(false)
-    const [previewImage, setPreviewImage] = useState(null)
 
     const { data, setData, post, processing, reset, errors } = useForm({
         name: "",
@@ -17,41 +11,12 @@ export default function UserCreate() {
         password: "",
         password_confirmation: "",
         roles: "",
-        face_image: null,
+        enroll_face: false,
         store_id: "",
     })
 
-    const handleCapture = async () => {
-        const imageSrc = webcamRef.current?.getScreenshot()
-        if (imageSrc) {
-            try {
-                const res = await fetch(imageSrc)
-                const blob = await res.blob()
-                const file = new File([blob], "captured-face.jpg", { type: "image/jpeg" })
-
-                setData("face_image", file)
-                setPreviewImage(imageSrc)
-                setUseCamera(false) // Otomatis tutup kamera setelah foto diambil
-            } catch (error) {
-                console.error("Gagal mengambil gambar dari webcam:", error)
-            }
-        }
-    }
-
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0]
-        if (file) {
-            setData("face_image", file)
-            const reader = new FileReader()
-            reader.onload = (event) => setPreviewImage(event.target.result)
-            reader.readAsDataURL(file)
-        }
-    }
-
     const handleReset = () => {
         reset()
-        setPreviewImage(null)
-        setUseCamera(false)
     }
 
     const handleSubmit = (e) => {
@@ -160,70 +125,27 @@ export default function UserCreate() {
                                                 </div>
                                             </div>
 
-                                            {/* Face Recognition */}
+                                            {/* Face ID (Passkey) */}
                                             <div className="col-12">
                                                 <div className="border rounded p-3 bg-light">
-                                                    <label className="fw-semibold mb-3 d-block">Foto Wajah (Face Recognition)</label>
-
-                                                    {!useCamera ? (
-                                                        <div className="d-flex flex-column gap-2">
-                                                            <input
-                                                                type="file"
-                                                                className={`form-control ${errors.face_image ? "is-invalid" : ""}`}
-                                                                onChange={handleImageUpload}
-                                                                accept="image/*"
-                                                            />
-                                                            <div>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-outline-secondary btn-sm mt-1"
-                                                                    onClick={() => setUseCamera(true)}
-                                                                >
-                                                                    <i className="bi bi-camera me-2"></i>Gunakan Kamera Direct
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="d-flex flex-column align-items-start">
-                                                            <Webcam
-                                                                audio={false}
-                                                                ref={webcamRef}
-                                                                screenshotFormat="image/jpeg"
-                                                                className="img-fluid rounded mb-2 border"
-                                                                videoConstraints={{ width: 400, height: 300, facingMode: "user" }}
-                                                            />
-                                                            <div className="d-flex gap-2">
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-primary btn-sm"
-                                                                    onClick={handleCapture}
-                                                                >
-                                                                    <i className="bi bi-camera-fill me-2"></i>Ambil Foto
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-outline-danger btn-sm"
-                                                                    onClick={() => setUseCamera(false)}
-                                                                >
-                                                                    <i className="bi bi-x-circle me-2"></i>Batal
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {previewImage && (
-                                                        <div className="mt-3">
-                                                            <p className="small text-muted mb-2">Pratinjau Foto Wajah Terpilih:</p>
-                                                            <img
-                                                                src={previewImage}
-                                                                alt="Preview Wajah"
-                                                                className="img-thumbnail rounded"
-                                                                style={{ maxWidth: "180px", maxHeight: "180px", objectFit: "cover" }}
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {errors.face_image && <div className="text-danger small mt-2">{errors.face_image}</div>}
+                                                    <div className="form-check">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="form-check-input"
+                                                            id="enroll_face"
+                                                            checked={data.enroll_face}
+                                                            onChange={(e) => setData("enroll_face", e.target.checked)}
+                                                        />
+                                                        <label className="form-check-label fw-semibold" htmlFor="enroll_face">
+                                                            <i className="bi bi-person-bounding-box me-2"></i>Daftarkan Face ID setelah user disimpan
+                                                        </label>
+                                                    </div>
+                                                    <p className="small text-muted mt-2 mb-0">
+                                                        Wajah tidak disimpan di server. Setelah user disimpan, Anda akan diarahkan ke halaman
+                                                        pendaftaran Face ID. Pendaftaran dilakukan di perangkat milik user (atau perangkat
+                                                        kasir yang akan dipakai) menggunakan biometrik bawaan perangkat.
+                                                    </p>
+                                                    {errors.enroll_face && <div className="text-danger small mt-2">{errors.enroll_face}</div>}
                                                 </div>
                                             </div>
 

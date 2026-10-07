@@ -7,12 +7,4 @@ export default defineConfig({
         laravel(['resources/js/app.jsx']),
         react(),
     ],
-    optimizeDeps: {
-        include: ['@vladmandic/face-api'],
-    },
-    build: {
-        commonjsOptions: {
-            include: [/@vladmandic\/face-api/, /node_modules/],
-        },
-    },
 });

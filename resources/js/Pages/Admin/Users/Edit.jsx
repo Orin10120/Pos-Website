@@ -2,9 +2,10 @@ import { useState } from "react"
 import { usePage, useForm, Head, Link } from "@inertiajs/react"
 import Swal from "sweetalert2"
 import AdminLayout from "../../../Layouts/AdminLayout"
+import UserFaceId from "../../../Components/UserFaceId"
 
 export default function UserEdit() {
-    const { roles, stores, user } = usePage().props
+    const { roles, stores, user, passkeys, enroll } = usePage().props
 
     const [showPassword, setShowPassword] = useState(false)
     const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false)
@@ -236,6 +237,7 @@ export default function UserEdit() {
                                 </div>
                             </div>
                         </div>
+                        <UserFaceId user={user} passkeys={passkeys} highlight={enroll} />
                     </div>
                 </div>
             </AdminLayout>
