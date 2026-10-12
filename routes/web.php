@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\ProfileStoreController;
+use App\Http\Controllers\Admin\CategoryController;
 
 
 Route::get('/', function () {
@@ -80,6 +82,10 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
             'controller' => SupplierController::class,
             'permissions' => 'suppliers.index|suppliers.create|suppliers.edit|suppliers.delete'
         ],
+        'categories' => [
+            'controller' => CategoryController::class,
+            'permissions' => 'categories.index|categories.create|categories.edit|categories.delete'
+        ],
     ];
 
     foreach ($resources as $name => $resource) {
@@ -99,4 +105,10 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
     });
 
     Route::get('/get-cities/{provinceId}', [WarehouseController::class, 'getCitiesByProvince'])->name('get-cities');
+
+    Route::get('/profile-store', [ProfileStoreController::class, 'createOrEdit'])
+          ->middleware('permission:profiles.index')
+          ->name('store.createOrEdit');
+    Route::post('/profile-store', [ProfileStoreController::class, 'store'])->name('store.store');
+    Route::post('/update-password', [ProfileStoreController::class, 'updatePassword'])->name('update-password');
 });
