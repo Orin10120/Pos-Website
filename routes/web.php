@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\ProfileStoreController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\UnitController;
 
 
 Route::get('/', function () {
@@ -86,6 +87,11 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
             'controller' => CategoryController::class,
             'permissions' => 'categories.index|categories.create|categories.edit|categories.delete'
         ],
+        'units' => [
+            'controller' => UnitController::class,
+            'permissions' => 'units.index|units.create|units.edit|units.delete'
+        ],
+
     ];
 
     foreach ($resources as $name => $resource) {
