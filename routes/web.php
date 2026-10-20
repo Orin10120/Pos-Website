@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\ProfileStoreController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\ProductController;
 
 
 Route::get('/', function () {
@@ -91,7 +92,11 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
             'controller' => UnitController::class,
             'permissions' => 'units.index|units.create|units.edit|units.delete'
         ],
-
+        'products' => [
+            'controller' => ProductController::class,
+            'permissions' => 'products.index|products.create|products.edit|products.delete',
+            'name' => 'products'
+        ],
     ];
 
     foreach ($resources as $name => $resource) {

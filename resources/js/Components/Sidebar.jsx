@@ -15,12 +15,13 @@ const Sidebar = () => {
         profiles: hasAnyPermission(["profiles.index"]),
         categories: hasAnyPermission(["categories.index"]),
         units: hasAnyPermission(["units.index"]),
+        products: hasAnyPermission(["products.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
     const hasUserManagement = permissions.roles || permissions.users
     const hasDataManagement = permissions.customers || permissions.warehouses || permissions.stores || permissions.suppliers || permissions.profiles
-    const hasProductManagement = permissions.categories || permissions.units
+    const hasProductManagement = permissions.categories || permissions.units || permissions.products
 
     return (
         <aside
@@ -146,6 +147,14 @@ const Sidebar = () => {
                                     href="/admin/units"
                                     icon="bi-boxes"
                                     label="Units"
+                                />
+                            )}
+
+                            {permissions.products && (
+                                <NavItem
+                                    href="/admin/products"
+                                    icon="bi-box-seam-fill"
+                                    label="Products"
                                 />
                             )}
 
