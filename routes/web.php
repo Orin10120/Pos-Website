@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ProfileStoreController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PoController;
 
 
 Route::get('/', function () {
@@ -97,6 +98,11 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
             'permissions' => 'products.index|products.create|products.edit|products.delete',
             'name' => 'products'
         ],
+        'po' => [
+            'controller' => PoController::class,
+            'permissions' => 'purchaseorders.index|purchaseorders.create|purchaseorders.edit|purchaseorders.delete'
+        ],
+
     ];
 
     foreach ($resources as $name => $resource) {

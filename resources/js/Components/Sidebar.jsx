@@ -16,12 +16,14 @@ const Sidebar = () => {
         categories: hasAnyPermission(["categories.index"]),
         units: hasAnyPermission(["units.index"]),
         products: hasAnyPermission(["products.index"]),
+        purchaseorders: hasAnyPermission(["purchaseorders.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
     const hasUserManagement = permissions.roles || permissions.users
     const hasDataManagement = permissions.customers || permissions.warehouses || permissions.stores || permissions.suppliers || permissions.profiles
     const hasProductManagement = permissions.categories || permissions.units || permissions.products
+    const hasInventoryManagement = permissions.purchaseorders
 
     return (
         <aside
@@ -158,7 +160,21 @@ const Sidebar = () => {
                                 />
                             )}
 
+                        </>
+                    )}
 
+                    {/* 5. INVENTORY MANAGEMENT SECTION */}
+                    {hasInventoryManagement && (
+                        <>
+                            <li className="nav-item text-white-50 mt-3 mb-1 text-muted">Inventory Management</li>
+
+                            {permissions.purchaseorders && (
+                                <NavItem
+                                    href="/admin/po"
+                                    icon="bi-receipt"
+                                    label="Purchase Orders"
+                                />
+                            )}
                         </>
                     )}
 
