@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PoController;
+use App\Http\Controllers\Admin\PurchaseOrderItemController;
 
 
 Route::get('/', function () {
@@ -128,4 +129,14 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
           ->name('store.createOrEdit');
     Route::post('/profile-store', [ProfileStoreController::class, 'store'])->name('store.store');
     Route::post('/update-password', [ProfileStoreController::class, 'updatePassword'])->name('update-password');
+
+    Route::prefix('po')->middleware('permission:purchaseorderitems.index')->group(function () {
+        Route::get('{po}/items', [PurchaseOrderItemController::class, 'index'])->name('po.items.index');
+
+        Route::get('{po}/items/create', [PurchaseOrderItemController::class, 'create'])
+            ->middleware('permission:purchaseorderitems.create')
+            ->name('po.items.create');
+
+        Route::post('{po}/items', [PurchaseOrderItemController::class, 'store'])->name('po.items.store');
+    });
 });
