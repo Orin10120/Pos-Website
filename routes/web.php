@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PoController;
 use App\Http\Controllers\Admin\PurchaseOrderItemController;
+use App\Http\Controllers\Admin\ProductStockController;
 
 
 Route::get('/', function () {
@@ -102,6 +103,11 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
         'po' => [
             'controller' => PoController::class,
             'permissions' => 'purchaseorders.index|purchaseorders.create|purchaseorders.edit|purchaseorders.delete'
+        ],
+
+        'stocks' => [
+            'controller' => \App\Http\Controllers\Admin\ProductStockController::class,
+            'permissions' => 'stocks.index|stocks.create|stocks.delete'
         ],
 
     ];

@@ -17,13 +17,14 @@ const Sidebar = () => {
         units: hasAnyPermission(["units.index"]),
         products: hasAnyPermission(["products.index"]),
         purchaseorders: hasAnyPermission(["purchaseorders.index"]),
+        stocks: hasAnyPermission(["stocks.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
     const hasUserManagement = permissions.roles || permissions.users
     const hasDataManagement = permissions.customers || permissions.warehouses || permissions.stores || permissions.suppliers || permissions.profiles
     const hasProductManagement = permissions.categories || permissions.units || permissions.products
-    const hasInventoryManagement = permissions.purchaseorders
+    const hasInventoryManagement = permissions.purchaseorders || permissions.stocks
 
     return (
         <aside
@@ -173,6 +174,14 @@ const Sidebar = () => {
                                     href="/admin/po"
                                     icon="bi-receipt"
                                     label="Purchase Orders"
+                                />
+                            )}
+
+                            {permissions.stocks && (
+                                <NavItem
+                                    href="/admin/stocks"
+                                    icon="bi-box-arrow-in-down"
+                                    label="Stock In"
                                 />
                             )}
                         </>
