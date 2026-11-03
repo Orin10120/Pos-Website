@@ -153,4 +153,9 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
          Route::post('/process-payment', [\App\Http\Controllers\Admin\TransactionController::class, 'processPayment'])->name('process-payment');
          Route::post('/get-snap-token', [\App\Http\Controllers\Admin\TransactionController::class, 'getSnapToken'])->name('get-snap-token');
      });
+
+     Route::prefix('report')->name('report.')->middleware('permission:reports.index')->group(function () {
+         Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+         Route::get('/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate'])->name('generate');
+     });
 });
