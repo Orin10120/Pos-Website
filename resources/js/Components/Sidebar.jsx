@@ -20,13 +20,14 @@ const Sidebar = () => {
         stocks: hasAnyPermission(["stocks.index"]),
         transactions: hasAnyPermission(["transactions.index"]),
         reports: hasAnyPermission(["reports.index"]),
+        profits: hasAnyPermission(["profits.index"]),
        }
 
     // Cek apakah ada permission untuk setiap kategori
     const hasUserManagement = permissions.roles || permissions.users
     const hasDataManagement = permissions.customers || permissions.warehouses || permissions.stores || permissions.suppliers || permissions.profiles
     const hasProductManagement = permissions.categories || permissions.units || permissions.products
-    const hasInventoryManagement = permissions.purchaseorders || permissions.stocks || permissions.transactions || permissions.reports
+    const hasInventoryManagement = permissions.purchaseorders || permissions.stocks || permissions.transactions || permissions.reports || permissions.profits
 
     return (
         <aside
@@ -200,6 +201,14 @@ const Sidebar = () => {
                                     href="/admin/report"
                                     icon="bi-bar-chart"
                                     label="Reports"
+                                />
+                            )}
+
+                            {permissions.profits && (
+                                <NavItem
+                                    href="/admin/profit"
+                                    icon="bi-graph-up"
+                                    label="Profits"
                                 />
                             )}
                         </>

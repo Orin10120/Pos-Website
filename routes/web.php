@@ -158,4 +158,9 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
          Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
          Route::get('/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate'])->name('generate');
      });
+
+     Route::prefix('profit')->name('profit.')->middleware('permission:profits.index')->group(function () {
+         Route::get('/', [\App\Http\Controllers\Admin\ProfitController::class, 'index'])->name('index');
+         Route::get('/generate', [\App\Http\Controllers\Admin\ProfitController::class, 'generate'])->name('generate');
+     });
 });
