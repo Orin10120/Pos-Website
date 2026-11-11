@@ -14,42 +14,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Xendit\Xendit;
 use Xendit\Invoice;
+use Xendit\Xendit;
 
 class TransactionController extends Controller
 {
     /**
      * Menampilkan halaman transaksi dan data terkait.
-     * Handle redirect setelah pembayaran Xendit selesai.
      */
     public function index(Request $request, UserAccessService $userAccessService)
     {
         $userId = Auth::id();
         $isAdmin = $userAccessService->isAdmin();
-
-        // Xendit biasanya mengembalikan redirect atau Anda bisa menggunakan webhook.
-        // Jika Anda menggunakan redirect kembali dari Xendit dengan parameter external_id / invoice_id:
-        $externalId = $request->input('external_id');
-        $status = $request->input('status'); // Contoh jika Xendit melempar parameter
-
-        if ($externalId) {
-            $transaction = Transaction::where('invoice', $externalId)->first();
-
-            if ($transaction) {
-                // Status dari Xendit umumnya: PENDING, SETTLED, EXPIRED
-                if ($status === 'SETTLED' || $status === 'PAID') {
-                    $transaction->status = 'success';
-                } elseif ($status === 'PENDING') {
-                    $transaction->status = 'pending';
-                } elseif ($status === 'EXPIRED' || $status === 'FAILED') {
-                    $transaction->status = 'failed';
-                }
-                $transaction->save();
-            }
-
-            return redirect()->route('admin.sales.index');
-        }
 
         $customers = Customer::all();
         $categories = Category::all();
@@ -103,7 +79,7 @@ class TransactionController extends Controller
         $userId = Auth::id();
         $customerId = $validatedData['customer_id'] ?? null;
 
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('login');
         }
 
@@ -118,7 +94,7 @@ class TransactionController extends Controller
         $newQuantity = $cartQuantity + $validatedData['quantity'];
 
         if ($newQuantity > $productStock) {
-            return redirect()->back()->withErrors(['quantity' => 'Kuantitas melebihi stok yang tersedia. Stok saat ini: ' . $productStock]);
+            return redirect()->back()->withErrors(['quantity' => 'Kuantitas melebihi stok yang tersedia. Stok saat ini: '.$productStock]);
         }
 
         $cartItem = Cart::where('user_id', $userId)
@@ -167,7 +143,7 @@ class TransactionController extends Controller
 
         if ($discount > $totalAmount) {
             return redirect()->back()->withErrors([
-                'discount' => 'Diskon tidak boleh melebihi total belanja'
+                'discount' => 'Diskon tidak boleh melebihi total belanja',
             ]);
         }
 
@@ -193,10 +169,10 @@ class TransactionController extends Controller
                 $product = Product::find($item['product_id']);
                 $stockTotal = StockTotal::where('product_id', $product->id)->first();
 
-                if (!$stockTotal || $stockTotal->total_stock < $item['quantity']) {
+                if (! $stockTotal || $stockTotal->total_stock < $item['quantity']) {
                     return redirect()->back()->withErrors([
                         'quantity' => "Stok produk untuk {$product->name} tidak mencukupi. Stok saat ini: "
-                            . ($stockTotal->total_stock ?? 0)
+                            .($stockTotal->total_stock ?? 0),
                     ]);
                 }
 
@@ -267,7 +243,7 @@ class TransactionController extends Controller
         $params = [
             'external_id' => (string) $transaction->invoice, // Gunakan nomor invoice Anda sebagai external_id unik
             'amount' => $finalAmount,
-            'description' => 'Pembayaran Transaksi #' . $transaction->invoice,
+            'description' => 'Pembayaran Transaksi #'.$transaction->invoice,
             'invoice_duration' => 86400, // Masa aktif invoice dalam detik (contoh: 24 jam)
             'customer' => [
                 'given_names' => $transaction->customer->name ?? 'Guest',
@@ -298,8 +274,10 @@ class TransactionController extends Controller
         $cartItem = Cart::find($id);
         if ($cartItem) {
             $cartItem->delete();
+
             return redirect()->back();
         }
+
         return redirect()->back();
     }
 }

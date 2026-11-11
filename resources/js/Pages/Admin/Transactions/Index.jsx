@@ -221,7 +221,8 @@ const Sales = () => {
                         if (!paymentRef) return showAlert("Error!", "Link pembayaran tidak tersedia.", "error")
                         // Xendit Invoice: arahkan kasir ke halaman pembayaran Xendit.
                         // Setelah selesai, Xendit redirect kembali ke halaman transaksi
-                        // dengan parameter status & external_id (ditangani di TransactionController::index).
+                        // dan status transaksi diperbarui oleh webhook Xendit
+                        // (POST /api/xendit/notification).
                         window.location.href = paymentRef
                     } else if (state.paymentMethod === "cash") {
                         Swal.fire({

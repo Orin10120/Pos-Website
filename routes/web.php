@@ -157,7 +157,6 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
          Route::post('/add-product', [\App\Http\Controllers\Admin\TransactionController::class, 'addProductToCart'])->name('add-product');
          Route::delete('/delete-from-cart/{id}', [\App\Http\Controllers\Admin\TransactionController::class, 'deleteFromCart'])->name('delete-from-cart');
          Route::post('/process-payment', [\App\Http\Controllers\Admin\TransactionController::class, 'processPayment'])->name('process-payment');
-         Route::post('/get-snap-token', [\App\Http\Controllers\Admin\TransactionController::class, 'getSnapToken'])->name('get-snap-token');
      });
 
      Route::prefix('report')->name('report.')->middleware('permission:reports.index')->group(function () {

@@ -38,6 +38,7 @@ return [
     'xendit' => [
         'secret_key' => env('XENDIT_SECRET_KEY'),
         'is_production' => env('XENDIT_IS_PRODUCTION', false),
+        'token_webhook' => env('XENDIT_TOKEN_WEBHOOK'),
     ],
 
 ];
