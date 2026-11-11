@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StockOpnameRequest;
-use App\Models\StockOpname;
 use App\Models\Product;
-use App\Models\StockProduct;
+use App\Models\StockOpname;
 use App\Models\StockTotal;
 use App\Models\Store;
 use App\Models\TransactionDetail;
+use App\Services\StockOpnameExcelExporter;
+use App\Services\StockOpnameReportBuilder;
 use App\Services\UserAccessService;
 use Carbon\Carbon;
 
@@ -25,7 +26,6 @@ class StockOpnameController extends Controller
     public function index()
     {
         $storeId = $this->userAccessService->getStoreId();
-
 
         if ($this->userAccessService->isAdmin()) {
             $stockOpnames = StockOpname::latest()->paginate(10);
@@ -44,12 +44,13 @@ class StockOpnameController extends Controller
         $storeWarehouses = $warehouses->flatMap(function ($store) use ($storeNames) {
             return $store->warehouses->map(function ($warehouse) use ($store, $storeNames) {
                 $storeName = $storeNames->firstWhere('id', $store->id);
+
                 return [
                     'id' => $warehouse->id,
                     'name' => $warehouse->name,
                     'address' => $warehouse->address,
                     'store_id' => $store->id,
-                    'store_name' => $storeName ? $storeName->name : 'Unknown Store'
+                    'store_name' => $storeName ? $storeName->name : 'Unknown Store',
                 ];
             });
         });
@@ -57,7 +58,7 @@ class StockOpnameController extends Controller
         return inertia('Admin/StockOpnames/Index', [
             'stockOpnames' => $stockOpnames,
             'storeWarehouses' => $storeWarehouses,
-            'storeNames' => $storeNames
+            'storeNames' => $storeNames,
         ]);
     }
 
@@ -72,7 +73,7 @@ class StockOpnameController extends Controller
         }
 
         return inertia('Admin/StockOpnames/Create', [
-            'products' => $products
+            'products' => $products,
         ]);
     }
 
@@ -91,7 +92,7 @@ class StockOpnameController extends Controller
         foreach ($validatedData['products'] as $productData) {
             $product = Product::find($productData['product_id']);
 
-            if (!$product || ($product->store_id !== $storeId && !$this->userAccessService->isAdmin())) {
+            if (! $product || ($product->store_id !== $storeId && ! $this->userAccessService->isAdmin())) {
                 continue;
             }
 
@@ -106,7 +107,6 @@ class StockOpnameController extends Controller
                 })
                 ->sum('quantity');
             $endingQuantity = $stockTotal->total_stock - $sales;
-
 
             $quantityDifference = $productData['physical_quantity'] - $endingQuantity;
 
@@ -135,10 +135,9 @@ class StockOpnameController extends Controller
 
         return inertia('Admin/StockOpnames/Edit', [
             'stockOpname' => $stockOpname,
-            'products' => $products
+            'products' => $products,
         ]);
     }
-
 
     public function update(StockOpnameRequest $request, StockOpname $stockOpname)
     {
@@ -156,9 +155,9 @@ class StockOpnameController extends Controller
         foreach ($validatedData['products'] as $productData) {
             $stockTotal = StockTotal::where('product_id', $productData['product_id'])->first();
 
-            if (!$stockTotal) {
+            if (! $stockTotal) {
                 return redirect()->back()->withErrors([
-                    'products' => 'Stok produk dengan ID ' . $productData['product_id'] . ' tidak ditemukan.'
+                    'products' => 'Stok produk dengan ID '.$productData['product_id'].' tidak ditemukan.',
                 ]);
             }
 
@@ -182,69 +181,25 @@ class StockOpnameController extends Controller
         return redirect()->route('admin.stock-opnames.index');
     }
 
-    public function show(StockOpname $stockOpname)
+    public function show(StockOpname $stockOpname, StockOpnameReportBuilder $reportBuilder)
     {
-        $storeId = $stockOpname->store_id;
-        $storeNames = Store::where('id', $storeId)->get();
-
-        $warehouses = Store::where('id', $storeId)
-            ->with('warehouses')
-            ->first()
-            ->warehouses;
-
-        $storeProducts = StockProduct::select('store_id', 'warehouse_id', 'product_id', 'stock_quantity')
-            ->where('store_id', $storeId)
-            ->with(['product' => function ($query) {
-                $query->select('id', 'purchase_price', 'selling_price', 'barcode', 'name', 'unit_id')
-                    ->with('unit');
-            }])
-            ->get();
-
-        $groupedProducts = $storeProducts->groupBy('product_id');
-        $mergedProducts = $groupedProducts->map(function ($group) {
-            $totalQuantity = $group->sum('stock_quantity');
-            $product = $group->first();
-            $product->stock_quantity = $totalQuantity;
-            return $product;
-        });
-
-        $stockOpname->load('details');
-
-        $stockDetails = $stockOpname->details;
-
-        $salesData = TransactionDetail::selectRaw('product_id, sum(quantity) as total_quantity, sum(subtotal) as total_value')
-            ->whereHas('transaction', function ($query) {
-                $query->where('status', 'success');
-            })
-            ->groupBy('product_id')
-            ->get()
-            ->keyBy('product_id');
-
-        $mergedProducts->each(function ($product) use ($stockDetails, $salesData) {
-            $detail = $stockDetails->where('product_id', $product->product_id)->first();
-            $product->physical_quantity = $detail ? $detail->physical_quantity : 0;
-
-            $sales = $salesData->get($product->product_id);
-            $product->sales_quantity = $sales ? $sales->total_quantity : 0;
-
-            $product->ending_quantity = $product->stock_quantity - $product->sales_quantity;
-            $product->quantity_difference = $product->physical_quantity - $product->ending_quantity;
-        });
-
-        $mergedProductsArray = $mergedProducts->values()->toArray();
-
-        $storeStockQuantities = StockProduct::selectRaw('store_id, sum(stock_quantity) as total_stock')
-            ->where('store_id', $storeId)
-            ->groupBy('store_id')
-            ->get();
+        $report = $reportBuilder->build($stockOpname);
 
         return inertia('Admin/StockOpnames/Show', [
             'stockOpname' => $stockOpname,
-            'storeNames' => $storeNames,
-            'storeProducts' => $mergedProductsArray,
-            'warehouses' => $warehouses,
-            'storeStockQuantities' => $storeStockQuantities,
-            'salesData' => $salesData,
+            'storeNames' => $report['storeNames'],
+            'storeProducts' => $report['products']->toArray(),
+            'warehouses' => $report['warehouses'],
+            'storeStockQuantities' => $report['storeStockQuantities'],
+            'salesData' => $report['salesData'],
         ]);
+    }
+
+    /**
+     * Unduh detail stock opname dalam format Excel (.xlsx).
+     */
+    public function export(StockOpname $stockOpname, StockOpnameExcelExporter $exporter)
+    {
+        return $exporter->download($stockOpname);
     }
 }

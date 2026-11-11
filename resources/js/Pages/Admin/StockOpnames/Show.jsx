@@ -26,6 +26,12 @@ export default function StockOpnameDetail() {
                                     >
                                         <i className="bi bi-arrow-left"></i> Back
                                     </button>
+                                    <a
+                                        href={`/admin/stock-opnames/${stockOpname.id}/export`}
+                                        className="btn btn-outline-dark btn-md"
+                                    >
+                                        <i className="bi bi-file-earmark-excel-fill me-1"></i> Export Excel
+                                    </a>
                                 </div>
 
                                 {/* Body */}

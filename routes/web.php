@@ -1,31 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\UserPasskeyController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PoController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductStockController;
+use App\Http\Controllers\Admin\ProfileStoreController;
+use App\Http\Controllers\Admin\ProfitController;
+use App\Http\Controllers\Admin\PurchaseOrderItemController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\StockOpnameController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\SupplierController;
-use App\Http\Controllers\Admin\ProfileStoreController;
-use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UnitController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\PoController;
-use App\Http\Controllers\Admin\PurchaseOrderItemController;
-use App\Http\Controllers\Admin\ProductStockController;
-
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserPasskeyController;
+use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\LogoutController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return \Illuminate\Support\Facades\Auth::check()
+    return Auth::check()
         ? redirect()->route('admin.dashboard')
         : redirect()->to('/login');
 });
-
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -36,7 +39,7 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
     ->middleware('auth')
     ->name('logout');
 
- Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     Route::get('/dashboard', DashboardController::class)
         ->name('dashboard');
 
@@ -68,7 +71,7 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
     });
 
     Route::resource('stores', StoreController::class)->only(['index'])
-    ->middleware('permission:stores.index');
+        ->middleware('permission:stores.index');
 
     Route::middleware(['role:admin'])->group(function () {
         Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
@@ -81,40 +84,39 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
     $resources = [
         'customers' => [
             'controller' => CustomerController::class,
-            'permissions' => 'customers.index|customers.create|customers.edit|customers.delete'
+            'permissions' => 'customers.index|customers.create|customers.edit|customers.delete',
         ],
         'suppliers' => [
             'controller' => SupplierController::class,
-            'permissions' => 'suppliers.index|suppliers.create|suppliers.edit|suppliers.delete'
+            'permissions' => 'suppliers.index|suppliers.create|suppliers.edit|suppliers.delete',
         ],
         'categories' => [
             'controller' => CategoryController::class,
-            'permissions' => 'categories.index|categories.create|categories.edit|categories.delete'
+            'permissions' => 'categories.index|categories.create|categories.edit|categories.delete',
         ],
         'units' => [
             'controller' => UnitController::class,
-            'permissions' => 'units.index|units.create|units.edit|units.delete'
+            'permissions' => 'units.index|units.create|units.edit|units.delete',
         ],
         'products' => [
             'controller' => ProductController::class,
             'permissions' => 'products.index|products.create|products.edit|products.delete',
-            'name' => 'products'
+            'name' => 'products',
         ],
         'po' => [
             'controller' => PoController::class,
-            'permissions' => 'purchaseorders.index|purchaseorders.create|purchaseorders.edit|purchaseorders.delete'
+            'permissions' => 'purchaseorders.index|purchaseorders.create|purchaseorders.edit|purchaseorders.delete',
         ],
 
         'stocks' => [
-            'controller' => \App\Http\Controllers\Admin\ProductStockController::class,
-            'permissions' => 'stocks.index|stocks.create|stocks.delete'
+            'controller' => ProductStockController::class,
+            'permissions' => 'stocks.index|stocks.create|stocks.delete',
         ],
 
         'stock-opnames' => [
-            'controller' => \App\Http\Controllers\Admin\StockOpnameController::class,
-            'permissions' => 'stock-opnames.index|stock-opnames.create|stock-opnames.edit|stock-opnames.delete|stock-opnames.show'
+            'controller' => StockOpnameController::class,
+            'permissions' => 'stock-opnames.index|stock-opnames.create|stock-opnames.edit|stock-opnames.delete|stock-opnames.show',
         ],
-
 
     ];
 
@@ -123,8 +125,12 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
             ->middleware("permission:{$resource['permissions']}");
     }
 
+    Route::get('stock-opnames/{stockOpname}/export', [StockOpnameController::class, 'export'])
+        ->middleware('permission:stock-opnames.show')
+        ->name('stock-opnames.export');
+
     Route::resource('warehouses', WarehouseController::class)->only(['index'])
-    ->middleware('permission:stores.index');
+        ->middleware('permission:stores.index');
 
     Route::middleware(['role:admin'])->group(function () {
         Route::get('warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
@@ -137,8 +143,8 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
     Route::get('/get-cities/{provinceId}', [WarehouseController::class, 'getCitiesByProvince'])->name('get-cities');
 
     Route::get('/profile-store', [ProfileStoreController::class, 'createOrEdit'])
-          ->middleware('permission:profiles.index')
-          ->name('store.createOrEdit');
+        ->middleware('permission:profiles.index')
+        ->name('store.createOrEdit');
     Route::post('/profile-store', [ProfileStoreController::class, 'store'])->name('store.store');
     Route::post('/update-password', [ProfileStoreController::class, 'updatePassword'])->name('update-password');
 
@@ -153,19 +159,19 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
     });
 
     Route::prefix('sales')->name('sales.')->middleware('permission:transactions.index')->group(function () {
-         Route::get('/', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('index');
-         Route::post('/add-product', [\App\Http\Controllers\Admin\TransactionController::class, 'addProductToCart'])->name('add-product');
-         Route::delete('/delete-from-cart/{id}', [\App\Http\Controllers\Admin\TransactionController::class, 'deleteFromCart'])->name('delete-from-cart');
-         Route::post('/process-payment', [\App\Http\Controllers\Admin\TransactionController::class, 'processPayment'])->name('process-payment');
-     });
+        Route::get('/', [TransactionController::class, 'index'])->name('index');
+        Route::post('/add-product', [TransactionController::class, 'addProductToCart'])->name('add-product');
+        Route::delete('/delete-from-cart/{id}', [TransactionController::class, 'deleteFromCart'])->name('delete-from-cart');
+        Route::post('/process-payment', [TransactionController::class, 'processPayment'])->name('process-payment');
+    });
 
-     Route::prefix('report')->name('report.')->middleware('permission:reports.index')->group(function () {
-         Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
-         Route::get('/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate'])->name('generate');
-     });
+    Route::prefix('report')->name('report.')->middleware('permission:reports.index')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/generate', [ReportController::class, 'generate'])->name('generate');
+    });
 
-     Route::prefix('profit')->name('profit.')->middleware('permission:profits.index')->group(function () {
-         Route::get('/', [\App\Http\Controllers\Admin\ProfitController::class, 'index'])->name('index');
-         Route::get('/generate', [\App\Http\Controllers\Admin\ProfitController::class, 'generate'])->name('generate');
-     });
+    Route::prefix('profit')->name('profit.')->middleware('permission:profits.index')->group(function () {
+        Route::get('/', [ProfitController::class, 'index'])->name('index');
+        Route::get('/generate', [ProfitController::class, 'generate'])->name('generate');
+    });
 });
