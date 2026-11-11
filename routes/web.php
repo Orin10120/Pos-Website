@@ -110,6 +110,12 @@ Route::post('/logout', [LogoutController::class, '__invoke'])
             'permissions' => 'stocks.index|stocks.create|stocks.delete'
         ],
 
+        'stock-opnames' => [
+            'controller' => \App\Http\Controllers\Admin\StockOpnameController::class,
+            'permissions' => 'stock-opnames.index|stock-opnames.create|stock-opnames.edit|stock-opnames.delete|stock-opnames.show'
+        ],
+
+
     ];
 
     foreach ($resources as $name => $resource) {
