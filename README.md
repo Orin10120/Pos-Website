@@ -1,58 +1,207 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<h1 align="center">POS Website</h1>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  Aplikasi Point of Sale berbasis web untuk mengelola penjualan, stok, pembelian, dan laporan keuangan.
 </p>
 
-## About Laravel
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel">
+  <img src="https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React">
+  <img src="https://img.shields.io/badge/Inertia.js-v3-9553E9?style=flat-square" alt="Inertia">
+  <img src="https://img.shields.io/badge/Xendit-Payment-4353FF?style=flat-square" alt="Xendit">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tentang Project
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+POS Website adalah aplikasi manajemen toko (Point of Sale) yang dibangun dengan **Laravel** di sisi server dan **React + Inertia.js** di sisi client, sehingga tidak memerlukan API terpisah. Aplikasi ini mencakup alur bisnis lengkap: dari master data produk, purchase order, mutasi stok, kasir (POS), pembayaran online, hingga laporan penjualan dan laba.
 
-## Learning Laravel
+## Fitur
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Autentikasi & Akses**
+- Login email/password dan login **Face ID / Passkey** (WebAuthn) — pendaftaran passkey dilakukan admin.
+- Manajemen role & permission berbasis [spatie/laravel-permission](https://spatie.be/docs/laravel-permission).
+- Data dibatasi per toko (`store`) untuk pengguna non-admin.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Master Data**
+- Produk, kategori, satuan, pelanggan, supplier, toko, gudang, provinsi & kota.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+**Pembelian & Stok**
+- Purchase order beserta detail item dan status.
+- Kartu stok per produk/gudang, serta **stock opname** dengan **export Excel (.xlsx)**.
 
-## Agentic Development
+**Penjualan (Kasir)**
+- Keranjang belanja, pencarian produk, dan pemindaian barcode.
+- Integrasi **Xendit Invoice** untuk pembayaran online, dengan webhook notifikasi berbasis token.
+- Cetak struk (`react-to-print`).
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+**Laporan & Analitik**
+- Dashboard dengan grafik penjualan, produk terlaris, dan status transaksi (Recharts).
+- Laporan penjualan dan laporan laba/rugi per rentang tanggal.
+
+## Stack Teknologi
+
+| Bagian | Teknologi |
+| --- | --- |
+| Backend | Laravel 13, PHP 8.3+ |
+| Frontend | React 19, Inertia.js v3 |
+| Styling | Bootstrap 5, Bootstrap Icons, CSS kustom |
+| Database | SQLite (default), mendukung MySQL/PostgreSQL |
+| Autentikasi | Laravel Session, Laravel Passkeys (WebAuthn), Sanctum |
+| Pembayaran | Xendit PHP SDK v2.19 |
+| Build Tool | Vite 8 |
+| Testing | PHPUnit 12 |
+
+## Kebutuhan Sistem
+
+- PHP **8.3** atau lebih baru (dengan ekstensi `pdo_sqlite`, `mbstring`, `zip`, `curl`)
+- Composer 2
+- Node.js 18+ dan npm
+
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/Orin10120/Pos-Website.git
+cd Pos-Website
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Jalankan setup otomatis (install dependency, salin `.env`, generate key, migrasi, build asset):
 
-## Contributing
+```bash
+composer setup
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Atau secara manual:
 
-## Code of Conduct
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm install
+npm run build
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Konfigurasi
 
-## Security Vulnerabilities
+### Database
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Konfigurasi default menggunakan **SQLite**. Untuk MySQL/PostgreSQL, ubah baris berikut di `.env`:
 
-## License
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pos_website
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Pembayaran Xendit
+
+Tambahkan kredensial berikut ke `.env` untuk mengaktifkan pembayaran online:
+
+```env
+XENDIT_SECRET_KEY=your-secret-key
+XENDIT_IS_PRODUCTION=false
+XENDIT_TOKEN_WEBHOOK=your-callback-token
+```
+
+| Variabel | Deskripsi |
+| --- | --- |
+| `XENDIT_SECRET_KEY` | Secret key dari Xendit Dashboard → *Settings → Developers → API keys*. |
+| `XENDIT_IS_PRODUCTION` | `false` untuk mode sandbox, `true` untuk production. |
+| `XENDIT_TOKEN_WEBHOOK` | Token callback dari Xendit Dashboard → *Settings → Developers → Callbacks*. |
+
+> Webhook diterima pada endpoint `POST /api/xendit/notification` dan divalidasi melalui header `x-callback-token`.
+
+### Data Awal
+
+Seeder berikut membuat role `admin`, seluruh permission, dan akun administrator:
+
+| Field | Nilai |
+| --- | --- |
+| Email | `djuragan@gmail.com` |
+| Password | `password1234` |
+
+```bash
+php artisan db:seed
+```
+
+> Ganti password tersebut sebelum digunakan di lingkungan produksi.
+
+## Menjalankan Aplikasi
+
+```bash
+composer dev
+```
+
+Perintah tersebut menjalankan server dan proses develop secara bersamaan. Alternatif manual:
+
+```bash
+php artisan serve     # backend di http://localhost:8000
+npm run dev           # Vite dev server (hot reload)
+```
+
+## Pengujian
+
+```bash
+php artisan test                # seluruh test
+php artisan test --filter=StockOpnameExportTest   # test tertentu
+composer test                   # clear config lalu jalankan test
+```
+
+Cakupan test meliputi export Excel stock opname, webhook notifikasi Xendit, dan halaman dasar aplikasi.
+
+## Struktur Direktori
+
+```
+app/
+├── Http/Controllers/
+│   ├── Admin/            # Controller modul (produk, PO, transaksi, laporan, dll.)
+│   └── Auth/             # Login & logout
+├── Models/               # Model Eloquent (Product, Transaction, StockOpname, dll.)
+└── Services/             # Logika bisnis (UserAccessService, StockOpnameExcelExporter, dll.)
+
+resources/js/
+├── Components/           # Komponen UI (Cart, BarcodeScanner, Receipt, dll.)
+├── Layouts/              # Layout admin
+├── Pages/                # Halaman Inertia per modul
+└── utils/                # Helper (passkeys, dll.)
+
+routes/
+├── web.php               # Rute web + middleware role/permission
+└── api.php               # Rute API (webhook Xendit)
+
+database/
+├── migrations/           # Skema database
+└── seeders/              # Role, permission, dan user awal
+
+tests/
+├── Feature/              # Test fitur (export, webhook, dll.)
+└── Unit/                 # Test unit
+```
+
+## Hak Akses
+
+| Role | Keterangan |
+| --- | --- |
+| `admin` | Akses penuh ke seluruh modul, dapat mengelola user, role, dan passkey. |
+| Non-admin | Akses sesuai permission yang diberikan; data difilter berdasarkan toko yang ditugaskan. |
+
+Permission didefinisikan per modul dengan pola `{modul}.{aksi}` — contoh: `products.create`, `transactions.index`, `stock-opnames.show`.
+
+## Kontribusi
+
+Kontribusi diterima melalui pull request. Pastikan seluruh test lolos (`php artisan test`) dan jalankan formatter sebelum submit:
+
+```bash
+vendor/bin/pint --format agent
+```
+
+## Lisensi
+
+Project ini dilisensikan di bawah [MIT License](https://opensource.org/licenses/MIT).
